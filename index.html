@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>xboard 发布页</title>
 <style>
-  :root { color-scheme: light; --fg:#1a1a1a; --muted:#666; --line:#e5e5e5; --accent:#0b6cff; --ok:#0a7d2c; --card:#fff; --bg:#f6f6f6; }
+  :root { color-scheme: light; --fg:#1a1a1a; --muted:#666; --line:#e5e5e5; --accent:#0b6cff; --ok:#0a7d2c; --bad:#c0392b; --card:#fff; --bg:#f6f6f6; }
   * { box-sizing: border-box; }
   body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--fg); }
   .wrap { max-width:600px; margin:0 auto; padding:20px 16px 48px; }
@@ -14,23 +14,34 @@
   .sub { color:var(--muted); font-size:14px; margin:0 0 18px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin:0 0 14px; }
   .card h2 { font-size:16px; margin:0 0 10px; }
-  .domain { display:flex; align-items:center; gap:10px; padding:12px 10px; border:1px solid var(--line); border-radius:10px; margin:0 0 10px; background:#fff; }
-  .domain:last-child { margin-bottom:0; }
-  .domain .info { flex:1; min-width:0; }
-  .domain .host { font-size:16px; font-weight:600; word-break:break-all; }
-  .domain .note { font-size:13px; color:var(--muted); margin-top:2px; }
+  .line { border:1px solid var(--line); border-radius:10px; padding:12px; margin:0 0 10px; background:#fff; }
+  .line:last-child { margin-bottom:0; }
+  .line .top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .line .host { font-size:16px; font-weight:600; word-break:break-all; }
+  .line .note { font-size:13px; color:var(--muted); margin-top:4px; }
   .badge { font-size:12px; color:#fff; background:var(--accent); border-radius:999px; padding:2px 8px; white-space:nowrap; }
   .badge.fast { background:var(--ok); }
-  .latency { font-size:13px; color:var(--muted); white-space:nowrap; min-width:64px; text-align:right; }
+  .badge.line-no { background:#555; }
+  .status { font-size:13px; white-space:nowrap; }
+  .status.ok { color:var(--ok); font-weight:600; }
+  .status.bad { color:var(--bad); }
+  .status.checking { color:var(--muted); }
   .btn { display:inline-block; border:1px solid var(--accent); color:var(--accent); background:#fff; border-radius:999px; padding:8px 16px; font-size:14px; cursor:pointer; text-decoration:none; }
   .btn.primary { background:var(--accent); color:#fff; }
   .btn:disabled { opacity:.5; cursor:default; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
   .muted { color:var(--muted); font-size:13px; }
   ol, ul { margin:6px 0 0; padding-left:20px; font-size:14px; line-height:1.7; }
   a { color:var(--accent); }
   .kv { font-size:14px; line-height:1.8; word-break:break-all; }
   .hidden { display:none; }
+  .updates { list-style:none; margin:0; padding:0; font-size:14px; line-height:1.7; }
+  .updates li { padding:6px 0; border-bottom:1px dashed var(--line); }
+  .updates li:last-child { border-bottom:0; }
+  .updates .date { color:var(--muted); font-size:13px; margin-right:6px; white-space:nowrap; }
+  .qr { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+  .qr img { width:140px; height:140px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  .qr .qr-note { flex:1; min-width:180px; font-size:14px; line-height:1.7; }
 </style>
 </head>
 <body>
@@ -39,17 +50,36 @@
   <p class="sub">收藏本页，打不开主站时从这里找最新地址。</p>
 
   <div class="card">
-    <h2>站点地址</h2>
+    <h2>回家的路</h2>
+    <ul class="updates" id="updateList"><li class="muted">加载中…</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>网页版最新网址</h2>
     <div id="domainList"><p class="muted">加载中…</p></div>
     <div class="row" style="margin-top:12px;">
       <button class="btn primary" id="speedBtn" type="button">测速择优</button>
-      <span class="muted" id="speedHint">点测速后自动标出最快的一条。</span>
+      <span class="muted" id="speedHint">页面打开后自动检测各线路状态，点测速标出最快的一条。</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>免费 APP / 添加到主屏幕</h2>
+    <div class="qr">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQMAAACXljzdAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABPklEQVRYhd2XuxHDIAyG5aOg9AiMwmgwGqMwAiWFD0UPknNyHkCKKpvPhf/j1wvg3wIlOuQKcFxxnnpgnCz+9bNnrLgOnPQoWqyTgDjoNZMG0dMT0lfeCSs9UJQ6IgAFcMGTUpNku6oV2Hp+/eaL7Nxmsh6z3iS5BUmLE57CHOGfHyKCXQVxpJ5r8UsgXBEHFaQKhzgsdc4Y4wSvsLuZ2kn1oHGyIMxzpJal+vMtYHvntksSRGDLXFVFdGoFzRN6HZB2LlBuf3LBKRGl777AfqM2V9ADYStxdw76eHOVXcIdjFxF3UzTu5UKbsmO3KTa0lBBDrsDm0Ql6FYAOtnt3LZM9vxGHUxnf9XjmOytoJVdYdlV6IfwVc2IvBX4IbS8o9wCT0WOiboqSzfT+/n2m0nyyW3kXYY+0gO35L/iBWcVLauM3GD6AAAAAElFTkSuQmCC" alt="发布页二维码（moodles.fun）" width="140" height="140">
+      <div class="qr-note">
+        <p style="margin:0 0 8px;">扫码打开本发布页。暂无独立 App，先把网页版添加到主屏幕，打开速度与 App 一样：</p>
+        <ol style="margin:0;">
+          <li>iPhone：Safari 打开本页 → 点底部分享 →「添加到主屏幕」。</li>
+          <li>安卓：Chrome 打开本页 → 点右上角菜单 →「添加到主屏幕」或「安装应用」。</li>
+        </ol>
+      </div>
     </div>
   </div>
 
   <div class="card">
     <h2>收藏本页</h2>
-    <p style="margin:0;font-size:14px;line-height:1.7;">按 <b>Ctrl+D</b>（Mac 按 <b>⌘+D</b>）把本页加入收藏夹。主站打不开时，先来这里找最新地址，不要只记一个域名。</p>
+    <p style="margin:0;font-size:14px;line-height:1.7;">按 <b>Ctrl+D</b>（Mac 按 <b>⌘+D</b>）把本页加入收藏夹。建议再<b>截一张图保存</b>本页（把三个网址都截进去），万一浏览器收藏丢了、照着图也能找回。主站打不开时，先来这里找最新地址，不要只记一个域名。</p>
   </div>
 
   <div class="card">
@@ -60,7 +90,7 @@
   <div class="card">
     <h2>打不开自救步骤</h2>
     <ol>
-      <li>先点上面「测速择优」，换最快的那条地址进站。</li>
+      <li>先看上面各线路的状态，点状态是「在线」的那条进站；或点「测速择优」换最快的一条。</li>
       <li>如果都打不开，换个网络试试（Wi-Fi 与流量切换、或换浏览器）。</li>
       <li>还打不开：发任意内容到发布邮箱，自动回复会发你最新地址；或在 TG 频道看置顶公告。</li>
       <li>不要轻信搜索引擎里的所谓“新地址”，只认本页与发布邮箱/TG 频道给出的地址。</li>
@@ -73,10 +103,12 @@
 <script>
 (function () {
   var listEl = document.getElementById('domainList');
+  var updateEl = document.getElementById('updateList');
   var contactEl = document.getElementById('contactBox');
   var speedBtn = document.getElementById('speedBtn');
   var speedHint = document.getElementById('speedHint');
   var cfg = null;
+  var lineNos = ['一', '二', '三', '四', '五'];
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -84,18 +116,38 @@
     });
   }
 
+  function renderUpdates() {
+    var ups = (cfg.updates || []).slice().sort(function (a, b) {
+      return String(b.date).localeCompare(String(a.date));
+    });
+    if (!ups.length) {
+      updateEl.innerHTML = '<li class="muted">暂无更新记录。</li>';
+      return;
+    }
+    updateEl.innerHTML = ups.map(function (u) {
+      return '<li><span class="date">' + esc(u.date) + '</span>' + esc(u.text) + '</li>';
+    }).join('');
+  }
+
   function render() {
     document.getElementById('siteName').textContent = (cfg.site_name || 'xboard') + ' 发布页';
+    renderUpdates();
     var html = '';
     cfg.domains.forEach(function (d, i) {
-      html += '<div class="domain" data-host="' + esc(d.host) + '">' +
-        '<div class="info"><div class="host">' + esc(d.host) + '</div>' +
-        '<div class="note">' + esc(d.label || '') + (d.note ? ' · ' + esc(d.note) : '') + '</div></div>' +
+      var no = lineNos[i] || String(i + 1);
+      html += '<div class="line" data-host="' + esc(d.host) + '">' +
+        '<div class="top">' +
+        '<span class="badge line-no">线路' + no + '</span>' +
+        '<span class="host">' + esc(d.host) + '</span>' +
         (d.primary ? '<span class="badge">主站</span>' : '') +
         '<span class="badge fast hidden" data-fast-badge>最快</span>' +
-        '<span class="latency" data-latency>—</span>' +
-        '<a class="btn" href="https://' + esc(d.host) + '/" target="_blank" rel="noopener">打开</a>' +
-        '</div>';
+        '<span class="status checking" data-status>检测中…</span>' +
+        '</div>' +
+        '<div class="note">' + esc(d.label || '') + (d.note ? ' · ' + esc(d.note) : '') + '</div>' +
+        '<div class="row">' +
+        '<button class="btn" type="button" data-copy>复制地址</button>' +
+        '<a class="btn primary" href="https://' + esc(d.host) + '/" target="_blank" rel="noopener">打开</a>' +
+        '</div></div>';
     });
     listEl.innerHTML = html;
 
@@ -111,6 +163,41 @@
         '<span class="muted">给这个邮箱发任意内容，会自动回复最新地址。</span>';
     }
     contactEl.innerHTML = c || '<span class="muted">暂无联系方式。</span>';
+
+    listEl.addEventListener('click', function (ev) {
+      var btn = ev.target.closest ? ev.target.closest('[data-copy]') : null;
+      if (!btn) return;
+      var row = btn.closest('.line');
+      var url = 'https://' + row.getAttribute('data-host') + '/';
+      copyText(url, btn);
+    });
+
+    checkAllStatus();
+  }
+
+  function copyText(text, btn) {
+    var done = function () {
+      var old = btn.textContent;
+      btn.textContent = '已复制';
+      setTimeout(function () { btn.textContent = old; }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+    } else {
+      fallbackCopy(text);
+      done();
+    }
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
   }
 
   function testOne(host, ms) {
@@ -124,22 +211,49 @@
       .finally(function () { clearTimeout(timer); });
   }
 
+  function setStatus(row, t) {
+    var st = row.querySelector('[data-status]');
+    if (t === null) {
+      st.textContent = '无法连接';
+      st.className = 'status bad';
+    } else {
+      st.textContent = '在线 ' + t + ' ms';
+      st.className = 'status ok';
+    }
+    return { host: row.getAttribute('data-host'), row: row, t: t };
+  }
+
+  function checkAllStatus() {
+    var rows = Array.prototype.slice.call(listEl.querySelectorAll('.line'));
+    rows.forEach(function (r) {
+      var st = r.querySelector('[data-status]');
+      st.textContent = '检测中…';
+      st.className = 'status checking';
+    });
+    Promise.all(rows.map(function (r) {
+      return testOne(r.getAttribute('data-host'), 8000).then(function (t) { return setStatus(r, t); });
+    })).then(function (res) {
+      var ok = res.filter(function (x) { return x.t !== null; }).sort(function (a, b) { return a.t - b.t; });
+      if (ok.length) {
+        speedHint.textContent = '当前最快：' + ok[0].host + '（' + ok[0].t + ' ms），点右侧「打开」进入。';
+      } else {
+        speedHint.textContent = '都测不到，先按自救步骤换网络再试。';
+      }
+    });
+  }
+
   speedBtn.addEventListener('click', function () {
     if (!cfg) return;
     speedBtn.disabled = true;
     speedHint.textContent = '测速中…';
-    var rows = Array.prototype.slice.call(listEl.querySelectorAll('.domain'));
+    var rows = Array.prototype.slice.call(listEl.querySelectorAll('.line'));
     rows.forEach(function (r) {
-      r.querySelector('[data-latency]').textContent = '测速中…';
+      r.querySelector('[data-status]').textContent = '测速中…';
+      r.querySelector('[data-status]').className = 'status checking';
       r.querySelector('[data-fast-badge]').classList.add('hidden');
     });
     var jobs = rows.map(function (r) {
-      var host = r.getAttribute('data-host');
-      return testOne(host, 8000).then(function (t) {
-        var lat = r.querySelector('[data-latency]');
-        lat.textContent = (t === null) ? '超时' : (t + ' ms');
-        return { host: host, row: r, t: t };
-      });
+      return testOne(r.getAttribute('data-host'), 8000).then(function (t) { return setStatus(r, t); });
     });
     Promise.all(jobs).then(function (res) {
       var ok = res.filter(function (x) { return x.t !== null; }).sort(function (a, b) { return a.t - b.t; });
@@ -158,6 +272,7 @@
     .then(function (j) { cfg = j; render(); })
     .catch(function () {
       listEl.innerHTML = '<p class="muted">配置加载失败，请刷新重试。</p>';
+      updateEl.innerHTML = '<li class="muted">配置加载失败。</li>';
       contactEl.innerHTML = '<span class="muted">配置加载失败。</span>';
     });
 })();
