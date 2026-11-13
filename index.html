@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>xboard 发布页</title>
+<style>
+  :root { color-scheme: light; --fg:#1a1a1a; --muted:#666; --line:#e5e5e5; --accent:#0b6cff; --ok:#0a7d2c; --card:#fff; --bg:#f6f6f6; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--fg); }
+  .wrap { max-width:600px; margin:0 auto; padding:20px 16px 48px; }
+  h1 { font-size:22px; margin:6px 0 4px; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin:0 0 14px; }
+  .card h2 { font-size:16px; margin:0 0 10px; }
+  .domain { display:flex; align-items:center; gap:10px; padding:12px 10px; border:1px solid var(--line); border-radius:10px; margin:0 0 10px; background:#fff; }
+  .domain:last-child { margin-bottom:0; }
+  .domain .info { flex:1; min-width:0; }
+  .domain .host { font-size:16px; font-weight:600; word-break:break-all; }
+  .domain .note { font-size:13px; color:var(--muted); margin-top:2px; }
+  .badge { font-size:12px; color:#fff; background:var(--accent); border-radius:999px; padding:2px 8px; white-space:nowrap; }
+  .badge.fast { background:var(--ok); }
+  .latency { font-size:13px; color:var(--muted); white-space:nowrap; min-width:64px; text-align:right; }
+  .btn { display:inline-block; border:1px solid var(--accent); color:var(--accent); background:#fff; border-radius:999px; padding:8px 16px; font-size:14px; cursor:pointer; text-decoration:none; }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .muted { color:var(--muted); font-size:13px; }
+  ol, ul { margin:6px 0 0; padding-left:20px; font-size:14px; line-height:1.7; }
+  a { color:var(--accent); }
+  .kv { font-size:14px; line-height:1.8; word-break:break-all; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="siteName">xboard 发布页</h1>
+  <p class="sub">收藏本页，打不开主站时从这里找最新地址。</p>
+
+  <div class="card">
+    <h2>站点地址</h2>
+    <div id="domainList"><p class="muted">加载中…</p></div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn primary" id="speedBtn" type="button">测速择优</button>
+      <span class="muted" id="speedHint">点测速后自动标出最快的一条。</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>收藏本页</h2>
+    <p style="margin:0;font-size:14px;line-height:1.7;">按 <b>Ctrl+D</b>（Mac 按 <b>⌘+D</b>）把本页加入收藏夹。主站打不开时，先来这里找最新地址，不要只记一个域名。</p>
+  </div>
+
+  <div class="card">
+    <h2>联系与找回</h2>
+    <div class="kv" id="contactBox"><p class="muted">加载中…</p></div>
+  </div>
+
+  <div class="card">
+    <h2>打不开自救步骤</h2>
+    <ol>
+      <li>先点上面「测速择优」，换最快的那条地址进站。</li>
+      <li>如果都打不开，换个网络试试（Wi-Fi 与流量切换、或换浏览器）。</li>
+      <li>还打不开：发任意内容到发布邮箱，自动回复会发你最新地址；或在 TG 频道看置顶公告。</li>
+      <li>不要轻信搜索引擎里的所谓“新地址”，只认本页与发布邮箱/TG 频道给出的地址。</li>
+    </ol>
+  </div>
+
+  <p class="muted" style="text-align:center;">本页内容由配置文件生成，地址有变时本页同步更新。</p>
+</div>
+
+<script>
+(function () {
+  var listEl = document.getElementById('domainList');
+  var contactEl = document.getElementById('contactBox');
+  var speedBtn = document.getElementById('speedBtn');
+  var speedHint = document.getElementById('speedHint');
+  var cfg = null;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function render() {
+    document.getElementById('siteName').textContent = (cfg.site_name || 'xboard') + ' 发布页';
+    var html = '';
+    cfg.domains.forEach(function (d, i) {
+      html += '<div class="domain" data-host="' + esc(d.host) + '">' +
+        '<div class="info"><div class="host">' + esc(d.host) + '</div>' +
+        '<div class="note">' + esc(d.label || '') + (d.note ? ' · ' + esc(d.note) : '') + '</div></div>' +
+        (d.primary ? '<span class="badge">主站</span>' : '') +
+        '<span class="badge fast hidden" data-fast-badge>最快</span>' +
+        '<span class="latency" data-latency>—</span>' +
+        '<a class="btn" href="https://' + esc(d.host) + '/" target="_blank" rel="noopener">打开</a>' +
+        '</div>';
+    });
+    listEl.innerHTML = html;
+
+    var c = '';
+    if (cfg.telegram_channel) {
+      c += 'TG 频道：<a href="' + esc(cfg.telegram_channel) + '" target="_blank" rel="noopener">' + esc(cfg.telegram_channel) + '</a><br>';
+    }
+    if (cfg.telegram_bot) {
+      c += 'TG 联系：<a href="' + esc(cfg.telegram_bot) + '" target="_blank" rel="noopener">' + esc(cfg.telegram_bot) + '</a><br>';
+    }
+    if (cfg.support_email) {
+      c += '发布邮箱：<a href="mailto:' + esc(cfg.support_email) + '">' + esc(cfg.support_email) + '</a><br>' +
+        '<span class="muted">给这个邮箱发任意内容，会自动回复最新地址。</span>';
+    }
+    contactEl.innerHTML = c || '<span class="muted">暂无联系方式。</span>';
+  }
+
+  function testOne(host, ms) {
+    var url = 'https://' + host + '/?t=' + Date.now() + Math.floor(Math.random() * 1e6);
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, ms);
+    var start = performance.now();
+    return fetch(url, { mode: 'no-cors', cache: 'no-store', signal: ctrl.signal, redirect: 'follow' })
+      .then(function () { return Math.round(performance.now() - start); })
+      .catch(function () { return null; })
+      .finally(function () { clearTimeout(timer); });
+  }
+
+  speedBtn.addEventListener('click', function () {
+    if (!cfg) return;
+    speedBtn.disabled = true;
+    speedHint.textContent = '测速中…';
+    var rows = Array.prototype.slice.call(listEl.querySelectorAll('.domain'));
+    rows.forEach(function (r) {
+      r.querySelector('[data-latency]').textContent = '测速中…';
+      r.querySelector('[data-fast-badge]').classList.add('hidden');
+    });
+    var jobs = rows.map(function (r) {
+      var host = r.getAttribute('data-host');
+      return testOne(host, 8000).then(function (t) {
+        var lat = r.querySelector('[data-latency]');
+        lat.textContent = (t === null) ? '超时' : (t + ' ms');
+        return { host: host, row: r, t: t };
+      });
+    });
+    Promise.all(jobs).then(function (res) {
+      var ok = res.filter(function (x) { return x.t !== null; }).sort(function (a, b) { return a.t - b.t; });
+      if (ok.length) {
+        ok[0].row.querySelector('[data-fast-badge]').classList.remove('hidden');
+        speedHint.textContent = '最快：' + ok[0].host + '（' + ok[0].t + ' ms），点右侧「打开」进入。';
+      } else {
+        speedHint.textContent = '都测不到，先按自救步骤换网络再试。';
+      }
+      speedBtn.disabled = false;
+    });
+  });
+
+  fetch('config.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) { cfg = j; render(); })
+    .catch(function () {
+      listEl.innerHTML = '<p class="muted">配置加载失败，请刷新重试。</p>';
+      contactEl.innerHTML = '<span class="muted">配置加载失败。</span>';
+    });
+})();
+</script>
+</body>
+</html>
